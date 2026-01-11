@@ -4,7 +4,11 @@ use macroquad::audio::{
 use macroquad::prelude::*;
 use macroquad::ui::{Skin, root_ui};
 
-const TRACKS: &[(&str, f32)] = &[("Safe.flac", 83.0), ("hideandseek.flac", 46.0)];
+// (Display Name, Filename, Duration)
+const TRACKS: &[(&str, &str, f32)] = &[
+    ("Safe", "Safe.flac", 83.0),
+    ("hideandseek", "hideandseek.flac", 46.0),
+];
 
 #[macroquad::main("VYRTU_PLAYER")]
 async fn main() {
@@ -57,7 +61,6 @@ async fn main() {
             ..Default::default()
         };
 
-        // TITLE IS BACK
         draw_text_ex("   VYRTU_PLAYER", 20.0, 40.0, text_params.clone());
         draw_text_ex(
             &status_message,
@@ -70,18 +73,18 @@ async fn main() {
             },
         );
 
-        for (index, (track_name, _)) in TRACKS.iter().enumerate() {
+        for (index, (display_name, file_name, _)) in TRACKS.iter().enumerate() {
             let btn_y = 120.0 + (index as f32 * 45.0);
-            if root_ui().button(vec2(20.0, btn_y), format!("   {}", track_name)) {
+            if root_ui().button(vec2(20.0, btn_y), format!("   {}", display_name)) {
                 if let Some(s) = &current_sound {
                     stop_sound(s);
                 }
                 playing = false;
                 elapsed_time = 0.0;
-                if let Ok(s) = load_sound(track_name).await {
+                if let Ok(s) = load_sound(file_name).await {
                     current_sound = Some(s);
                     current_track_index = index;
-                    status_message = format!("   READY: {}", track_name);
+                    status_message = format!("   READY: {}", display_name);
                 }
             }
         }
@@ -108,7 +111,7 @@ async fn main() {
 
         let bar_y = screen_height() - 120.0;
         if let Some(sound) = &current_sound {
-            let (_, duration) = TRACKS[current_track_index];
+            let (_, _, duration) = TRACKS[current_track_index];
             if playing {
                 elapsed_time = (get_time() - start_time) as f32;
                 if elapsed_time >= duration {
