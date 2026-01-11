@@ -3,25 +3,24 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>vyrtu_songplayer | rust-powered</title>
+    <title>vyrtu_songplayer | written in rust, btw</title>
+    <!-- Preload heavy assets for faster response -->
+    <link rel="preload" href="Safe.flac" as="fetch" crossorigin="anonymous">
+    <link rel="preload" href="hideandseek.flac" as="fetch" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* This embedded CSS runs BEFORE the WASM or external CSS loads */
         #loader {
-            position: fixed;
-            top: 50%; left: 50%;
-            width: 50px; height: 50px;
-            margin: -25px 0 0 -25px;
+            position: fixed; top: 50%; left: 50%;
+            width: 50px; height: 50px; margin: -25px 0 0 -25px;
             border: 4px solid rgba(100, 100, 255, 0.1);
-            border-top: 4px solid #6464ff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            z-index: 9999;
+            border-top: 4px solid #6464ff; border-radius: 50%;
+            animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            z-index: 9999; box-shadow: 0 0 15px rgba(100, 100, 255, 0.2);
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loaded #loader { display: none !important; }
-        .loaded canvas { display: block !important; }
-        canvas { display: none; } /* Stay hidden until WASM is ready */
+        canvas { display: none; }
+        .loaded canvas { display: block; }
+        .loaded #loader { display: none; }
     </style>
 </head>
 <body>
@@ -29,18 +28,16 @@
     <canvas id="glcanvas"></canvas>
     <script src="mq_js_bundle.js"></script>
     <script>
-        // Audio Bridge
-        window.addEventListener('click', function() {
+        window.addEventListener('click', () => {
             if (typeof resume_audio === 'function') resume_audio();
             var ctx = window.audioContext;
             if (ctx && ctx.state === 'suspended') ctx.resume();
         }, { once: true });
 
-        window.addEventListener('load', function() {
+        window.addEventListener('load', () => {
             if (typeof load === 'function') {
                 load("mediaplayer_web.wasm?v=" + Date.now());
-                // Short delay to ensure WASM has painted the menu
-                setTimeout(() => { document.body.classList.add('loaded'); }, 1500);
+                setTimeout(() => { document.body.classList.add('loaded'); }, 800);
             }
         });
     </script>
