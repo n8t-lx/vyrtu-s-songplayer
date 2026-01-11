@@ -1,17 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Try to load the mobile fix, but don't let it kill the page if it fails -->
-    <script src="coi-serviceworker.min.js" onerror="console.log('Mobile fix skipped or missing')"></script>
+    <!-- 1. The Mobile Fix (Must be the very first script) -->
+    <script src="coi-serviceworker.min.js"></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>vyrtu_songplayer | optimized</title>
-    
-    <link rel="preload" href="Safe.flac" as="fetch" crossorigin="anonymous">
-    <link rel="preload" href="hideandseek.flac" as="fetch" crossorigin="anonymous">
+    <title>vyrtu_songplayer | High-Fidelity</title>
     <link rel="stylesheet" href="style.css">
-    
     <style>
+        /* Instant CSS Loader */
         #loader {
             position: fixed; top: 50%; left: 50%;
             width: 50px; height: 50px; margin: -25px 0 0 -25px;
@@ -28,34 +25,22 @@
 <body>
     <div id="loader"></div>
     <canvas id="glcanvas"></canvas>
-    
     <script src="mq_js_bundle.js"></script>
     <script>
-        // Audio Bridge
+        // Unlock Audio for Mobile
         window.addEventListener('click', () => {
             if (typeof resume_audio === 'function') resume_audio();
-            var ctx = window.audioContext;
+            const ctx = window.audioContext;
             if (ctx && ctx.state === 'suspended') ctx.resume();
         }, { once: true });
 
-        // Optimized Loader
         window.addEventListener('load', () => {
             if (typeof load === 'function') {
-                // We use a shorter timeout to make it feel snappier
                 load("mediaplayer_web.wasm?v=" + Date.now());
-                
-                // Check every 100ms if the WASM is actually drawing to the canvas
-                let checkLoaded = setInterval(() => {
-                    if (document.body.classList.contains('loaded')) {
-                        clearInterval(checkLoaded);
-                    } else {
-                        document.body.classList.add('loaded');
-                    }
-                }, 1500); 
+                setTimeout(() => { document.body.classList.add('loaded'); }, 1000);
             }
         });
     </script>
 </body>
 </html>
-
 
