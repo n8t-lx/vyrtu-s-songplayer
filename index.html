@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-      <meta charset="utf-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>vyrtu_songplayer | written in rust, btw</title>
+    <!-- ADD THIS LINE BELOW TO FIX THE UI -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <canvas id="glcanvas"></canvas>
     <script src="mq_js_bundle.js"></script>
 <script>
 window.addEventListener('click', function() {
-  // 1. Trigger the Rust/WASM bridge function
   if (typeof resume_audio === 'function') {
     resume_audio();
   }
 
-  // 2. Resume the AudioContext using standard Promise syntax
   var ctx = window.audioContext;
   if (ctx && ctx.state === 'suspended') {
     ctx.resume().then(function() {
@@ -28,12 +28,13 @@ window.addEventListener('click', function() {
 
 window.addEventListener('load', function() {
   if (typeof load === 'function') {
-    load("mediaplayer_web.wasm");
+    // Keep the Date.now() here so your updates actually show up!
+    load("mediaplayer_web.wasm?v=" + Date.now());
   } else {
     console.error("Err! Missing Bridge!!! 3: ");
   } 
 });
 </script>
     </body>
-  </html>
+</html>
 
