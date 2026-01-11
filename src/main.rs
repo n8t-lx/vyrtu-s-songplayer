@@ -6,11 +6,10 @@ use macroquad::ui::{Skin, root_ui};
 
 const TRACKS: &[(&str, f32)] = &[("Safe.flac", 83.0), ("hideandseek.flac", 46.0)];
 
-#[macroquad::main("vyrtu_player")]
+#[macroquad::main("VYRTU_PLAYER")]
 async fn main() {
-    // USE THE SLIM 22KB FONT
     let font_data = include_bytes!("../jbm_slim.ttf");
-    let jbm_font = load_ttf_font_from_bytes(font_data).expect("Font failed");
+    let jbm_font = load_ttf_font_from_bytes(font_data).expect("Slim font failed");
 
     let ui_skin = {
         let label_style = root_ui()
@@ -45,7 +44,7 @@ async fn main() {
     let mut volume = 0.6;
     let mut current_sound: Option<Sound> = None;
     let mut current_track_index = 0;
-    let mut status_message = "   SYSTEM_READY".to_string();
+    let mut status_message = "   READY".to_string();
     let mut start_time = 0.0;
     let mut elapsed_time = 0.0;
 
@@ -58,6 +57,7 @@ async fn main() {
             ..Default::default()
         };
 
+        // TITLE IS BACK
         draw_text_ex("   VYRTU_PLAYER", 20.0, 40.0, text_params.clone());
         draw_text_ex(
             &status_message,
@@ -94,8 +94,7 @@ async fn main() {
                 (screen_width() - ((bars as f32 * bar_w) + ((bars - 1) as f32 * spacing))) / 2.0;
             let base_y = screen_height() / 2.0 + 40.0;
             for i in 0..bars {
-                let speed = 5.0 + (i as f64 * 0.8);
-                let t = get_time() * speed + (i as f64 * 0.4);
+                let t = get_time() * (5.0 + i as f64 * 0.8) + (i as f64 * 0.4);
                 let bar_h = ((t.sin() as f32 + 1.0) * 0.5) * (50.0 + i as f32 * 2.0) * volume + 4.0;
                 draw_rectangle(
                     start_x + i as f32 * (bar_w + spacing),
@@ -137,10 +136,7 @@ async fn main() {
                 Color::from_rgba(100, 100, 255, 255),
             );
 
-            if root_ui().button(
-                vec2(20.0, bar_y + 20.0),
-                if !playing { "   PLAY" } else { "   STOP" },
-            ) {
+            if root_ui().button(vec2(20.0, bar_y + 20.0), if !playing { "  " } else { "  " }) {
                 if !playing {
                     play_sound(
                         sound,
@@ -158,8 +154,8 @@ async fn main() {
                 }
             }
             if root_ui().button(
-                vec2(140.0, bar_y + 20.0),
-                if is_looped { "   LOOP" } else { "   LOOP" },
+                vec2(70.0, bar_y + 20.0),
+                if is_looped { "  " } else { "  " },
             ) {
                 is_looped = !is_looped;
             }
