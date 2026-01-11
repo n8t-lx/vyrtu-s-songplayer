@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+      <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>vyrtu_songplayer | written in rust, btw</title>
+    <style>
+      body {
+        margin: 0;
+        background-color: black;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+}
+canvas {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+</style>
+</head>
+<body>
+    <canvas id="glcanvas"></canvas>
+    <script src="mq_js_bundle.js"></script>
+<script>
+window.addEventListener('click', function() {
+  // 1. Trigger the Rust/WASM bridge function
+  if (typeof resume_audio === 'function') {
+    resume_audio();
+  }
+
+  // 2. Resume the AudioContext using standard Promise syntax
+  var ctx = window.audioContext;
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume().then(function() {
+      console.log("AudioContext state: " + ctx.state);
+    });
+  }
+
+  console.log("User interaction recorded.");
+}, { once: true });
+
+window.addEventListener('load', function() {
+  if (typeof load === 'function') {
+    load("mediaplayer_web.wasm");
+  } else {
+    console.error("Err! Missing Bridge!!! 3: ");
+  } 
+});
+</script>
+    </body>
+  </html>
+
