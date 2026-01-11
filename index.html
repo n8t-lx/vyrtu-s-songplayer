@@ -4,10 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>vyrtu_songplayer | written in rust, btw</title>
-    <!-- ADD THIS LINE BELOW TO FIX THE UI -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 1. ADD THE LOADER DIV HERE -->
+    <div id="loader"></div>
+
     <canvas id="glcanvas"></canvas>
     <script src="mq_js_bundle.js"></script>
 <script>
@@ -28,8 +30,12 @@ window.addEventListener('click', function() {
 
 window.addEventListener('load', function() {
   if (typeof load === 'function') {
-    // Keep the Date.now() here so your updates actually show up!
     load("mediaplayer_web.wasm?v=" + Date.now());
+    
+    // 2. ADD THIS TO HIDE THE SPINNER AFTER WASM LOADS
+    setTimeout(() => {
+        document.body.classList.add('loaded');
+    }, 1200); 
   } else {
     console.error("Err! Missing Bridge!!! 3: ");
   } 
