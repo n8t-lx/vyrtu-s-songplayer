@@ -1,4 +1,3 @@
-index.html linguist-vendored
-mq_js_bundle.js linguist-vendored
+
 *.wav linguist-generated
 *.flac linguist-generated
