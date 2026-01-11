@@ -4,14 +4,16 @@ use macroquad::audio::{
 use macroquad::prelude::*;
 use macroquad::ui::{Skin, root_ui};
 
-// UPDATED WITH YOUR EXACT TIMES
+// (Filename, Accurate Duration in Seconds)
 const TRACKS: &[(&str, f32)] = &[("Safe.flac", 83.0), ("hideandseek.flac", 46.0)];
 
 #[macroquad::main("vyrtu_player")]
 async fn main() {
+    // 1. Bake Font (Must be in project root alongside Cargo.toml)
     let font_data = include_bytes!("../JetBrainsMonoNerdFont-Regular.ttf");
     let jbm_font = load_ttf_font_from_bytes(font_data).expect("Font failed");
 
+    // 2. Custom UI Skinning
     let ui_skin = {
         let label_style = root_ui()
             .style_builder()
@@ -20,6 +22,7 @@ async fn main() {
             .font_size(20)
             .text_color(Color::from_rgba(200, 200, 200, 255))
             .build();
+
         let button_style = root_ui()
             .style_builder()
             .background_margin(RectOffset::new(5.0, 5.0, 5.0, 5.0))
@@ -32,6 +35,7 @@ async fn main() {
             .color_hovered(Color::from_rgba(60, 60, 60, 255))
             .color_clicked(Color::from_rgba(100, 100, 100, 255))
             .build();
+
         Skin {
             label_style,
             button_style,
@@ -46,6 +50,8 @@ async fn main() {
     let mut current_sound: Option<Sound> = None;
     let mut current_track_index = 0;
     let mut status_message = "   SYSTEM READY".to_string();
+
+    // Progress and Timing logic
     let mut start_time = 0.0;
     let mut elapsed_time = 0.0;
 
@@ -58,6 +64,7 @@ async fn main() {
             ..Default::default()
         };
 
+        // --- HEADER ---
         draw_text_ex("   VYRTU_SONGPLAYER", 20.0, 40.0, text_params.clone());
         draw_text_ex(
             &status_message,
@@ -88,6 +95,7 @@ async fn main() {
             } else {
                 "  "
             };
+
             if root_ui().button(vec2(20.0, btn_y), format!("{}{}", active_mark, track_name)) {
                 if let Some(s) = &current_sound {
                     stop_sound(s);
@@ -105,18 +113,20 @@ async fn main() {
             }
         }
 
-        // --- VISUALISER ---
+        // --- VISUALISER (Simulated Spectrum) ---
         if playing {
-            let bars = 20;
+            let bars = 24;
             let spacing = 8.0;
             let bar_w = 12.0;
             let total_w = (bars as f32 * bar_w) + ((bars - 1) as f32 * spacing);
             let start_x = (screen_width() - total_w) / 2.0;
             let base_y = screen_height() / 2.0 + 40.0;
+
             for i in 0..bars {
-                let t = get_time() * 8.0 + (i as f64 * 0.4);
+                let speed = 6.0 + (i as f64 * 0.6); // Higher index = faster flicker
+                let t = get_time() * speed + (i as f64 * 0.4);
                 let wave = (t.sin() as f32 + 1.0) * 0.5;
-                let bar_h = wave * 80.0 * volume + 5.0;
+                let bar_h = wave * (60.0 + i as f32 * 1.5) * volume + 4.0;
                 draw_rectangle(
                     start_x + i as f32 * (bar_w + spacing),
                     base_y - bar_h,
@@ -131,6 +141,7 @@ async fn main() {
         let bar_y = screen_height() - 120.0;
         if let Some(sound) = &current_sound {
             let (_, duration) = TRACKS[current_track_index];
+
             if playing {
                 elapsed_time = (get_time() - start_time) as f32;
                 if elapsed_time >= duration {
@@ -140,10 +151,12 @@ async fn main() {
                         playing = false;
                         elapsed_time = 0.0;
                         stop_sound(sound);
+                        status_message = format!("   FINISHED: {}", TRACKS[current_track_index].0);
                     }
                 }
             }
 
+            // Progress Bar
             let progress = (elapsed_time / duration).clamp(0.0, 1.0);
             draw_rectangle(
                 20.0,
@@ -160,6 +173,7 @@ async fn main() {
                 Color::from_rgba(100, 100, 255, 255),
             );
 
+            // Timer Display
             let time_txt = format!(
                 "{}:{:02} / {}:{:02}",
                 (elapsed_time / 60.0) as i32,
@@ -178,7 +192,7 @@ async fn main() {
                 },
             );
 
-            // PLAY/STOP Logic
+            // PLAY/STOP Control
             let play_label = if !playing { "   PLAY" } else { "   STOP" };
             if root_ui().button(vec2(20.0, bar_y + 20.0), play_label) {
                 if !playing {
@@ -190,11 +204,14 @@ async fn main() {
                         },
                     );
                     playing = true;
+                    // Resume timer from where it was
                     start_time = get_time() - (elapsed_time as f64);
+                    status_message = format!("   PLAYING: {}", TRACKS[current_track_index].0);
                 } else {
                     stop_sound(sound);
                     playing = false;
                     elapsed_time = 0.0; // Reset progress bar on Stop
+                    status_message = format!("   STOPPED: {}", TRACKS[current_track_index].0);
                 }
             }
 
@@ -205,7 +222,6 @@ async fn main() {
             ) {
                 is_looped = !is_looped;
                 if playing {
-                    // Restart with new loop param if already playing
                     stop_sound(sound);
                     play_sound(
                         sound,
@@ -218,6 +234,7 @@ async fn main() {
                 }
             }
 
+            // Volume Section
             let vol_x = screen_width() - 200.0;
             if vol_x > 300.0 {
                 draw_text_ex(
@@ -233,6 +250,7 @@ async fn main() {
                 set_sound_volume(sound, volume);
             }
         }
+
         next_frame().await
     }
 }
