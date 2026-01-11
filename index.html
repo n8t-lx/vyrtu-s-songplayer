@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- 1. The Mobile Security Fix (Must be first) -->
-    <script src="coi-serviceworker.min.js"></script>
+    <!-- Try to load the mobile fix, but don't let it kill the page if it fails -->
+    <script src="coi-serviceworker.min.js" onerror="console.log('Mobile fix skipped or missing')"></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>vyrtu_songplayer | optimized</title>
     
-    <!-- Preload Audio for instant playback -->
     <link rel="preload" href="Safe.flac" as="fetch" crossorigin="anonymous">
     <link rel="preload" href="hideandseek.flac" as="fetch" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
@@ -22,29 +21,41 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         canvas { display: none; }
-        .loaded canvas { display: block; }
-        .loaded #loader { display: none; }
+        .loaded canvas { display: block !important; }
+        .loaded #loader { display: none !important; }
     </style>
 </head>
 <body>
     <div id="loader"></div>
     <canvas id="glcanvas"></canvas>
+    
     <script src="mq_js_bundle.js"></script>
     <script>
+        // Audio Bridge
         window.addEventListener('click', () => {
             if (typeof resume_audio === 'function') resume_audio();
             var ctx = window.audioContext;
             if (ctx && ctx.state === 'suspended') ctx.resume();
         }, { once: true });
 
+        // Optimized Loader
         window.addEventListener('load', () => {
             if (typeof load === 'function') {
-                // Cache-buster + Date ensures fresh load
+                // We use a shorter timeout to make it feel snappier
                 load("mediaplayer_web.wasm?v=" + Date.now());
-                setTimeout(() => { document.body.classList.add('loaded'); }, 1000);
+                
+                // Check every 100ms if the WASM is actually drawing to the canvas
+                let checkLoaded = setInterval(() => {
+                    if (document.body.classList.contains('loaded')) {
+                        clearInterval(checkLoaded);
+                    } else {
+                        document.body.classList.add('loaded');
+                    }
+                }, 1500); 
             }
         });
     </script>
 </body>
 </html>
+
 
