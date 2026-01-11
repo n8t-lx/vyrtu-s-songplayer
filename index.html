@@ -44,7 +44,7 @@ window.addEventListener('click', function() {
 
 window.addEventListener('load', function() {
   if (typeof load === 'function') {
-    load("mediaplayer_web.wasm");
+    load("mediaplayer_web.wasm?v=" + Date.now());
   } else {
     console.error("Err! Missing Bridge!!! 3: ");
   } 
